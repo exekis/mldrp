@@ -198,10 +198,57 @@ TODO \inst{4} \and TODO \inst{5}}
     \centering
         \includegraphics[width=0.5\textwidth]{SAE1.png}
             \caption{Automated interpretation pipeline. \textcolor{blue!80}{\href{https://arxiv.org/pdf/2410.13928}{[Source]}}}
-        \end{figure}
-        \end{frame}
+\end{figure}
+\end{frame}
+    
 
 % KIARASH ENDS HERE
+
+% DANIEL STARTS HERE
+\section{Contributions}
+
+\begin{frame}
+    \frametitle{Unanswered Questions}
+    \begin{itemize}
+        \item Results demonstrate similar performance between the variants, but still some important differences.
+        \begin{itemize}
+            \item SAE weights are different between the variants (sp. randomized vs. trained weights).
+            \item Greater abstraction (as measured by entropy) in the trained weights.
+            \item Feature explanations differ between the variants.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+\frametitle{Our Idea: Training as we train}
+\begin{itemize}
+    \item \textbf{Goal}: Current work looked at the start and end of training, we examine the stages in between.
+    \item \textbf{Hypotheses}:
+        \begin{itemize}
+            \item The same metrics that were unable to distinguish between artifacts and real features, should display similar behavior over training checkpoints.
+            \item Superposition of input data is preserved by weight checkpoints.
+            \item Greater abstraction should be observed over training.
+        \end{itemize}
+\end{itemize}
+\begin{figure}
+    \centering
+        \includegraphics[width=0.7\textwidth]{training.pdf}
+        \caption{Training as we train. Our implementation is based on the \textit{sparsify} package by EleutherAI. \textcolor{blue!80}{\href{
+            https://github.com/EleutherAI/sparsify}{[Source]}}}
+        \label{fig:training}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Dynamical Embeddings (ongoing work)}
+\begin{itemize}
+    \item Currently, we require training SAEs on all layers at each checkpoint.
+    \item Idea is to use gradient updates on model weights to evolve the activation embeddings.
+    \item Formally, if $A(t) \in \mathbb{R}^{B \times D}$ is a layer activation batch at training iteration $t$; let $Z(t) = \mathrm{Embed}(A(t)) \in \mathbb{R}^{B \times d}$ be the embedding of the activations ($d \ll D$). We want an expression \[
+    Z(t + \Delta t) = \mathrm{Embed}(A(t + \Delta t)) = \mathrm{Embed}\left(A(t) - \frac{\partial \mathcal L}{\partial A(t)} \Delta t\right)
+    \]
+    \item This can be done if we use principal component analysis (PCA) to find the embedding of the activations.
+\end{itemize}
+\end{frame}
 
 \section{Conclusion}
 \begin{frame}

@@ -195,6 +195,196 @@ and many other applied fields, such as health, engineering, etc.
 
 % KIARASH ENDS HERE
 
+% VINCENT STARTS HERE
+
+\begin{frame}
+\frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+A potential counter-example for the effectiveness of SAEs:
+\begin{itemize}
+    \item Paper Title: "Sparse Autoencoders Can Interpret Randomly Initialized Transformers" \cite{heap2025sparseautoencodersinterpretrandomly}
+    \item SAEs should perform differently between a trained vs. randomly initalized transformer.
+    \item Turns out that SAEs dont always do this, with similar auto-interprebility scores across randomized/ unmodified transformers
+    \item Does this mean SAEs don't learn meaningful latent features?
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+    Transformer Model Variants Tested:
+    \begin{itemize}
+        \item Unmodified Trained transformer
+        \item Randomized Transformer (incl. embeddings)
+        \item Randomized Transformer (excl. embeddings)
+        \item Step-0
+        \item Gaussian Control
+    \end{itemize}
+    Setup:
+    \begin{itemize}
+        \item Top-k SAEs trained on 100 Million tokens from RedPajama dataset on Pythia models (70M - 7B)
+        \item Expansion Factor of 64
+        \item k = 32
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+    Evaluation:
+    \begin{itemize}
+        \item Fuzzing Scoring:
+
+    \end{itemize}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\textwidth]{Fuzzing.png}
+        \caption{Demonstration of Fuzzing scoring.}
+    \end{figure}
+    \begin{itemize}
+        \item Randomly sampled 100 features per SAE for evalaute
+
+    \end{itemize}
+\end{frame}
+
+\begin{frame}
+        \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+
+        \begin{itemize}
+            \item Results:
+
+        \end{itemize}
+        \begin{figure}
+            \centering
+            \includegraphics[width=0.50\textwidth]{auroc.png}
+            \caption{ROC curves for Pythia-410M \textcolor{blue!80}{\href{https://arxiv.org/pdf/2501.17727}{[Source]}}}
+        \end{figure}
+        \begin{itemize}
+            \item Fuzzing metric fails to distinguish between trained and randomized models
+        \end{itemize}
+\end{frame}
+\begin{frame}
+    \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+
+    \begin{itemize}
+        \item Does this mean that SAEs fail at learning meaningful latent features?
+        \item Fuzzing: measures how well learned latents work as a binary classifier
+        \item What exactly are SAEs learning qualitatively? 
+        \item Consider the abstractness of learned features measured by entropy of observed distribution of latent activations over tokens
+    \end{itemize}
+
+\end{frame}
+\begin{frame}
+    \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+    Randomly intialized transformers preserve superposition?
+    \begin{itemize}
+        \item Trained model: Added layer of "semantic understanding"
+        \item Randomized model: Preserves structure and superposition of input embeddings
+        \item Superposition: Layer can represent more features than it has neurons - so each neuron is responsible for representing some component of some feature
+        \item One can think of SAEs disentangling superposition! 
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+    \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.50\textwidth]{super.png}
+        \caption{Demonstration of randomly intialized 2-layer NN preserving superposition of toy dataset generated from sampling Lomax distribution. \textcolor{blue!80}{\href{https://arxiv.org/pdf/2501.17727}{[Source]}}}
+    \end{figure}
+
+\end{frame}
+\begin{frame}
+    \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+    Do randomly initialized NNs preserve or amplify superposition?
+    \begin{itemize}
+        \item Generate ground-truth features from hypersphere
+        \item Then, generate datapoints by linearly combining a small number of these ground-truth features
+        \item A synthetic dataset with known superposition properties is produced
+        \item Feed through 2-layer NN
+        \item Train SAEs with L1 sparsity penalty on both inputs and outputs
+
+    \end{itemize}
+
+\end{frame}
+\begin{frame}
+    \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+    SAE trained on inputs:
+    \begin{itemize}
+        \item SAEs were able to recover the ground truth features used to generate the synthetic data
+        \item This was measured by the mean max cosine similarity between learned features and ground-truth features
+    \end{itemize} 
+    SAE trained on outputs:
+    \begin{itemize}   
+        \item Ability of SAEs to achieve low reconstruction error while maintaining high sparsity as a proxy for degree to which outputs exhibits superposition
+        \item SAEs trained on output from superposed inputs performed better than Gaussian inputs
+        \item Interestingly, sparsity of outputs of NN itself was consistent across superposed inputs and Gaussian control
+
+    \end{itemize}
+
+\end{frame}
+\begin{frame}
+    \frametitle{SAEs Can Interpret Randomly Initialized Transformers}
+    Conclusion:
+    \begin{itemize}
+        \item SAEs can be used on randomized models with no loss to performance according to certain metrics
+        \item Good auto-interprebility scores does not necessarily mean that SAEs capture the underlying computational structure of the model
+        \item Current metrics for measuring the effectiveness of SAEs fail to capture "abstractness" of SAE latents
+    \end{itemize} 
+\end{frame}
+
+% VINCENT ENDS HERE
+
+% DANIEL STARTS HERE
+
+\section{Contributions}
+
+\begin{frame}
+    \frametitle{Unanswered Questions}
+    \begin{itemize}
+        \item Results demonstrate similar performance between the variants, but still some important differences.
+        \begin{itemize}
+            \item SAE weights are different between the variants (sp. randomized vs. trained weights).
+            \item Greater abstraction (as measured by entropy) in the trained weights.
+            \item Feature explanations differ between the variants.
+        \end{itemize}
+    \end{itemize}
+\end{frame}
+\begin{frame}
+\frametitle{Our Idea: Training as we train}
+\begin{itemize}
+    \item \textbf{Goal}: Current work looked at the start and end of training, we examine the stages in between.
+    \item \textbf{Hypotheses}:
+        \begin{itemize}
+            \item The same metrics that were unable to distinguish between artifacts and real features, should display similar behavior over training checkpoints.
+            \item Superposition of input data is preserved by weight checkpoints.
+            \item Greater abstraction should be observed over training.
+        \end{itemize}
+\end{itemize}
+\begin{figure}
+    \centering
+        \includegraphics[width=0.7\textwidth]{training.pdf}
+        \caption{Training as we train. Our implementation is based on the \textit{sparsify} package by EleutherAI. \textcolor{blue!80}{\href{
+            https://github.com/EleutherAI/sparsify}{[Source]}}}
+        \label{fig:training}
+\end{figure}
+\end{frame}
+
+\begin{frame}
+\frametitle{Dynamical Embeddings (ongoing work)}
+\begin{itemize}
+    \item Currently, we require training SAEs on all layers at each checkpoint.
+    \item Idea is to use gradient updates on model weights to evolve the activation embeddings.
+    \item Formally, if $A(t) \in \mathbb{R}^{B \times D}$ is a layer activation batch at training iteration $t$; let $Z(t) = \mathrm{Embed}(A(t)) \in \mathbb{R}^{B \times d}$ be the embedding of the activations ($d \ll D$). We want an expression \[
+    Z(t + \Delta t) = \mathrm{Embed}(A(t + \Delta t)) = \mathrm{Embed}\left(A(t) - \frac{\partial \mathcal L}{\partial A(t)} \Delta t\right)
+    \]
+    \item This can be done if we use principal component analysis (PCA) to find the embedding of the activations.
+\end{itemize}
+\end{frame}
+
+% DANIEL ENDS HERE
+
 \section{Conclusion}
 \begin{frame}
 \frametitle{Conclusion Summary}
